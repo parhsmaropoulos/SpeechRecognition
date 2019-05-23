@@ -1,10 +1,24 @@
 import numpy as np
+import speech_recognition as sr
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from python_speech_features import mfcc, logfbank
 
+recording = sr.Recognizer()
+
+# Obtain audio from microphone
+with sr.Microphone(device_index=1) as source:
+    recording.adjust_for_ambient_noise(source)
+    print("please say something:")
+    audio = recording.listen(source)
+
+# Write audio to a WAV file
+
+with open("microphone-results.wav", "wb") as f:
+    f.write(audio.get_wav_data())
+
 # Read file and return 2 values
-frequency_sampling, audio_signal = wavfile.read("D:/Users/Parhs/Σχολη/ΦωνηΚαιΗχος/audios/harvard.wav")
+frequency_sampling, audio_signal = wavfile.read("D:/Users/Parhs/Σχολη/ΦωνηΚαιΗχος/microphone-results.wav")
 
 # Display the parameters below
 print('\nSignal shape:', audio_signal.shape)
@@ -75,9 +89,9 @@ print('Signal Datatype:', audio_signal.dtype)
 
 audio_signal = audio_signal[:15000]
 
-#Extract Mel Frequency Cepstral Coefficient(MFCC) feature
+# Extract Mel Frequency Cepstral Coefficient(MFCC) feature
 
-features_mfcc = mfcc(audio_signal,frequency_sampling)
+features_mfcc = mfcc(audio_signal, frequency_sampling)
 
 # Print the paramenters
 
@@ -106,6 +120,23 @@ plt.matshow(filterbank_features)
 plt.title('Filter bank')
 plt.show()
 
+# Plot signal read from the file
+plt.subplot(211)
+plt.title('Spectrogram of the wav file')
 
+plt.plot(audio_signal)
+plt.xlabel('Sample')
+plt.ylabel('Amplitude')
 
+plt.subplot(212)
+plt.specgram(audio_signal, Fs=frequency_sampling)
+plt.xlabel('Time')
+plt.ylabel('Frequency')
 
+plt.show()
+
+# Output record
+try:
+    print("You said: \n" + recording.recognize_google(audio))
+except Exception as e:
+    print(e)
